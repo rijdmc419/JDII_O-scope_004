@@ -1,0 +1,112 @@
+#N canvas -11 -11 1920 956 12;
+#X msg 133 12 devices;
+#X obj 81 177 r Digital_value:;
+#X obj 910 692 tabwrite oscope;
+#X floatatom 898 599 5 0 0 0 - - -;
+#X obj 781 106 table oscope;
+#X msg 1002 602 3;
+#X floatatom 668 606 5 0 0 0 - - -;
+#X msg 772 609 3;
+#X obj 680 699 tabwrite oscope_test_2;
+#N canvas 0 50 450 250 (subpatch) 0;
+#X array oscope_test_2 5 float 1;
+#A 0 0.8 0.5 -0.3 0.6 -0.735721;
+#X array array2 4 float 3;
+#A 0 0 0 0 0;
+#X array array3 5 float 3;
+#A 0 0.25 0.25 0.25 0.25 0;
+#X coords 0 1 4 -1 200 140 1 0 0;
+#X restore 992 443 graph;
+#X text 586 357 first term is starting index next terms are sequential
+values;
+#X obj 794 188 tabread oscope_test_2;
+#X floatatom 793 154 5 0 5 0 - - -;
+#X floatatom 792 226 5 0 0 0 - - -;
+#X text 515 23 number of points in array;
+#X msg 1008 46 \; oscope_test_2 xticks 0 0.5 4;
+#X msg 1092 78 \; oscope_test_2 yticks 0 0.5 4;
+#X msg 886 37 \; oscope_test_2 ylabel -0.05 0 -0.25 -0.5 -0.75 -1 0.25
+0.5 0.75 1;
+#X msg 316 243 \; oscope_test_2 ylabel -0.05 0 1 0.25 0.5 0.75 -0.25
+-0.5 -0.75 -1;
+#X msg 590 430 \; array3 0 0.25 0.25 0.25 0.25;
+#X text 989 233 bounds: left most value \, top most value \, right
+most value \, and bottom most value;
+#X msg 993 262 \; array3 bounds 0 1 4 -1;
+#X msg 997 302 \; array2 bounds 0 1 4 -1;
+#X text 1163 275 the most recent bound call changes the canvas for
+all arrays in the canvas;
+#X msg 313 202 \; oscope_test_2 xlabel -1 0 1 2 3 4 -1;
+#X msg 521 39 \; array3 resize 5;
+#X obj 133 68 comport 3 9600;
+#X msg 279 20 open 3;
+#X msg 322 58 close;
+#X obj 30 97 print;
+#X floatatom 79 225 5 0 0 0 - - -;
+#X msg 211 103;
+#X floatatom 485 94 5 0 0 0 - - -;
+#X floatatom 138 590 10 0 0 1 baud - -;
+#X floatatom 234 667 3 0 0 3 parity - -;
+#X floatatom 266 667 3 0 0 2 stop - -;
+#X floatatom 298 666 3 0 0 3 data - -;
+#X floatatom 394 592 3 0 0 0 port - -;
+#X obj 330 596 tgl 15 0 empty empty rts/cts -10 20 1 11 -24198 -258699
+-1 0 1;
+#X obj 362 612 tgl 15 0 empty empty xon/xoff -14 20 1 11 -24198 -258699
+-1 0 1;
+#X text 83 666 serial packet format:;
+#X text 271 580 handshaking:;
+#X text 42 615 flow control inputs:;
+#X obj 170 615 tgl 15 0 empty empty dsr 0 20 1 11 -24198 -258699 -1
+0 1;
+#X obj 202 615 tgl 15 0 empty empty cts 0 20 1 11 -24198 -258699 -1
+0 1;
+#X obj 426 593 tgl 15 0 empty empty open -6 20 1 11 -24198 -258699
+-1 0 1;
+#X obj 458 627 print port_list;
+#X obj 555 584 print other;
+#X obj 490 590 tgl 15 0 empty empty hupcl -6 20 1 11 -24198 -258699
+-1 0 1;
+#X floatatom 522 603 10 0 0 1 rxerrors - -;
+#X obj 138 553 route baud dsr cts parity stop data rtscts xonxoff port
+open ports hupcl rxerrors;
+#X obj 583 122 tabwrite oscope_test_2;
+#X obj 493 137 % 10;
+#X symbolatom 644 179 10 0 0 0 - - -;
+#X obj 552 155 / 10;
+#X floatatom 616 212 5 0 0 0 - - -;
+#X obj 866 268 array set;
+#X obj 254 151 serial_print;
+#X connect 0 0 26 0;
+#X connect 1 0 30 0;
+#X connect 3 0 2 0;
+#X connect 5 0 2 1;
+#X connect 6 0 8 0;
+#X connect 7 0 8 1;
+#X connect 11 0 13 0;
+#X connect 12 0 11 0;
+#X connect 26 0 29 0;
+#X connect 26 0 32 0;
+#X connect 26 1 50 0;
+#X connect 27 0 26 0;
+#X connect 28 0 26 0;
+#X connect 32 0 52 0;
+#X connect 50 0 33 0;
+#X connect 50 1 43 0;
+#X connect 50 2 44 0;
+#X connect 50 3 34 0;
+#X connect 50 4 35 0;
+#X connect 50 5 36 0;
+#X connect 50 6 38 0;
+#X connect 50 7 39 0;
+#X connect 50 8 37 0;
+#X connect 50 9 45 0;
+#X connect 50 10 46 0;
+#X connect 50 11 48 0;
+#X connect 50 12 49 0;
+#X connect 50 13 47 0;
+#X connect 52 0 54 0;
+#X connect 54 0 51 0;
+#X connect 54 0 53 0;
+#X connect 54 0 55 0;
+#X coords 0 -1 1 1 85 60 1 100 100;
