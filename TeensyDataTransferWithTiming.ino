@@ -32,14 +32,19 @@ void setup() {
 //declare variables
 ADC::Sync_result result;
 int voltage0, voltage1;
+int prevVoltage0, prevVoltage1;
+int trigger = 0;
+int triggerVoltage = 0;
 char valueArray[512];
 int curIndex = 0;
 int timeVal = 0;
+int unsigned long prevTimeVal = 0;
+int unsigned long curTimeVal = 0;
 
-//currently unused variables
+//variables for future encoder code
 int voltScale = 3;
 int timeScale = 6;
-int triggerLevel = 4;
+int triggerScale = 4;
 
 //loop doing nothing
 void loop() {
@@ -47,56 +52,76 @@ void loop() {
 }
 
 void sendValues(){
-  //measure the current time in microseconds
-  timeVal = (micros() % 90) + 10;
+  //measures the time elapsed in microseconds since the last data sample
+  curTimeVal = micros();
+  timeVal = curTimeVal - prevTimeVal;
+  prevTimeVal = curTimeVal;
   
   //reads both adc values
   result = adc->readSynchronizedContinuous();
-  //stores both adc values
+  //stores current values to previous value variables, then overwrites current values to the new adc values
+  prevVoltage0 = voltage0;
+  prevVoltage1 = voltage1;
   voltage0 = result.result_adc0;
   voltage1 = result.result_adc1;
 
+  //calculates the voltage value of the trigger line on the graph
+  triggerVoltage = 3.3 * ((float)voltScale / 9) * ((float)triggerScale / 9);
+
+  //determines if trigger has been set
+  if((triggerVoltage <= voltage1) && (triggerVoltage > prevVoltage1)){
+    trigger = 2;
+  }else{
+    trigger = 0;
+  }
+
+  //outputs the triggeer value to the front of the current data line in the array
+  itoa(trigger, valueArray + curIndex * 12, 10);
+
+  //places a space character after trigger in the array
+  valueArray[curIndex * 12 + 1] = ' ';
+
   //loads voltage0 into the 512 byte value array, adding leading zeros if necessary
   if(voltage0 < 10){
-    valueArray[curIndex * 11] = '0';
-    valueArray[curIndex * 11 + 1] = '0';
-    itoa(voltage0, valueArray + curIndex * 11 + 2, 10);
+    valueArray[curIndex * 12 + 2] = '0';
+    valueArray[curIndex * 12 + 3] = '0';
+    itoa(voltage0, valueArray + curIndex * 12 + 4, 10);
   }else if(voltage0 < 100){
-    valueArray[curIndex * 11] = '0';
-    itoa(voltage0, valueArray + curIndex * 11 + 1, 10);
+    valueArray[curIndex * 12 + 2] = '0';
+    itoa(voltage0, valueArray + curIndex * 12 + 3, 10);
   }else{
-    itoa(voltage0, valueArray + curIndex * 11, 10);
+    itoa(voltage0, valueArray + curIndex * 12 + 2, 10);
   }
 
   //places a space character after voltage0 in the array
-  valueArray[curIndex * 11 + 3] = ' ';
+  valueArray[curIndex * 12 + 5] = ' ';
 
   //loads voltage1 into the 512 byte value array after the space, adding leading zeros if necessary
   if(voltage1 < 10){
-    valueArray[curIndex * 11 + 4] = '0';
-    valueArray[curIndex * 11 + 5] = '0';
-    itoa(voltage1, valueArray + curIndex * 11 + 6, 10);
+    valueArray[curIndex * 12 + 6] = '0';
+    valueArray[curIndex * 12 + 7] = '0';
+    itoa(voltage1, valueArray + curIndex * 12 + 8, 10);
   }else if(voltage1 < 100){
-    valueArray[curIndex * 11 + 4] = '0';
-    itoa(voltage1, valueArray + curIndex * 11 + 5, 10);
+    valueArray[curIndex * 12 + 6] = '0';
+    itoa(voltage1, valueArray + curIndex * 12 + 7, 10);
   }else{
-    itoa(voltage1, valueArray + curIndex * 11 + 4, 10);
+    itoa(voltage1, valueArray + curIndex * 12 + 6, 10);
   }
 
   //places a space character after voltage1 in the array
-  valueArray[curIndex * 11 + 7] = ' ';
+  valueArray[curIndex * 12 + 9] = ' ';
 
   //places timeVal into the value array after the second space
-  itoa(timeVal, valueArray + curIndex * 11 + 8, 10);
+  itoa(timeVal, valueArray + curIndex * 12 + 10, 10);
 
   //ends the specific line in the array with a newline character
-  valueArray[curIndex * 11 + 10] = '\n';
+  valueArray[curIndex * 12 + 11] = '\n';
 
   //increments index
   curIndex = curIndex + 1;
 
   //sends the valueArray to the usb buffer and sets curIndex to 0 if the valueArray is full
-  if(curIndex == 46){
+  if(curIndex == 42){
       curIndex = 0;
       Serial.write(valueArray);
   }
