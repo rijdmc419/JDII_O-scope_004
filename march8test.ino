@@ -24,6 +24,12 @@ int encA1LastState;
 int encB1State;
 int encB1LastState;
 
+int encA2State;
+int encA2LastState;
+int encB2State;
+int encB2LastState;
+
+volatile unsigned int countertrig = 0;  //This variable will increase or decrease depending on the rotation of encoder
 volatile unsigned int countertime = 0;  //This variable will increase or decrease depending on the rotation of encoder
 volatile unsigned int countervolt = 0;  //This variable will increase or decrease depending on the rotation of encoder
 volatile unsigned int counter = 0;
@@ -31,28 +37,37 @@ volatile unsigned int counter = 0;
 void setup() {
   Serial.begin (9600);
  
-  pinMode(2, INPUT);           // set pin to input
-  pinMode(3, INPUT);           // set pin to input
-  pinMode(4, INPUT);           // set pin to input
-  pinMode(5, INPUT);           // set pin to input
+  pinMode(16, INPUT);           // set pin to input
+  pinMode(17, INPUT);           // set pin to input
+  pinMode(18, INPUT);           // set pin to input
+  pinMode(19, INPUT);           // set pin to input
+  pinMode(20, INPUT);           // set pin to input
+  pinMode(21, INPUT);           // set pin to input
   
-  digitalWrite(2, HIGH);      
-  digitalWrite(3, HIGH);  
-  digitalWrite(4, HIGH);      
-  digitalWrite(5, HIGH);
+  digitalWrite(16, HIGH);      
+  digitalWrite(17, HIGH);  
+  digitalWrite(18, HIGH);      
+  digitalWrite(19, HIGH);
+  digitalWrite(20, HIGH);      
+  digitalWrite(21, HIGH);
 
 //reads initial state
-  encALastState = digitalRead(2);
-  encBLastState = digitalRead(5);
-  encA1LastState = digitalRead(3);
-  encB1LastState = digitalRead(4);
+  encALastState = digitalRead(17);
+  encBLastState = digitalRead(16);
+  encA1LastState = digitalRead(19);
+  encB1LastState = digitalRead(18);
+  encA2LastState = digitalRead(21);
+  encB2LastState = digitalRead(20);
+  
+
  
  
   //Setting up interrupt
   //A rising pulse from encodenren activated ai0(). AttachInterrupt 0 is DigitalPin nr 2 on moust Arduino.
   //attachInterrupt(0, ai0, CHANGE);
-  attachInterrupt(0, ai2, CHANGE);
-  attachInterrupt(1, ai3, CHANGE);
+  attachInterrupt(17, ai2, CHANGE);
+  attachInterrupt(19, ai3, CHANGE);
+  attachInterrupt(21, ai4, CHANGE);
   
   //B rising pulse from encodenren activated ai1(). AttachInterrupt 1 is DigitalPin nr 3 on moust Arduino.
   //attachInterrupt(1, ai1, CHANGE);
@@ -60,38 +75,18 @@ void setup() {
 
 void loop() {
   // Send the value of counter
-  Serial.print ("timescale: ");
+  Serial.print ("triggerval: ");
+  Serial.print (countertrig);
+  Serial.print (" timescale: ");
   Serial.print (countertime);
   Serial.print (" voltscale: ");
   Serial.println(countervolt);  
 }
 
-void ai0() {
-  encAState = digitalRead(2);
-  // ai0 is activated if DigitalPin nr 2 is going from LOW to HIGH
-  // Check pin 3 to determine the direction
-  if(encAState != encALastState && encAState == 1){
-    if(digitalRead(3) != encAState){
-      counter++;
-    }
-  }
-}
-
-void ai1() {
-  encBState = digitalRead(3);
-  // ai0 is activated if DigitalPin nr 2 is going from LOW to HIGH
-  // Check pin 3 to determine the direction
-  if(encBState != encBLastState && encBState == 0){
-    if(digitalRead(2) != encBState){
-      counter--;
-    }
-  }
-}
-
 void ai2(){
   cli();
-  encAState = digitalRead(2);
-  encBState = digitalRead(5);
+  encAState = digitalRead(17);
+  encBState = digitalRead(16);
   if (encAState != encALastState){
     if (encBState != encAState){
       if (countertime < 9){
@@ -111,8 +106,8 @@ void ai2(){
 }
 void ai3(){
   cli();
-  encA1State = digitalRead(3);
-  encB1State = digitalRead(4);
+  encA1State = digitalRead(19);
+  encB1State = digitalRead(18);
   if (encA1State != encA1LastState){
     if (encB1State != encA1State){
       if (countervolt < 9){
@@ -125,6 +120,27 @@ void ai3(){
       if (countervolt > 0){
       countervolt --;
       encA1LastState = encA1State;
+      sei();
+      }
+    }    
+  }  
+}
+void ai4(){
+  cli();
+  encA2State = digitalRead(21);
+  encB2State = digitalRead(20);
+  if (encA2State != encA2LastState){
+    if (encB2State != encA2State){
+      if (countertrig < 9){
+      countertrig ++;
+      encA2LastState = encA2State;
+      }      
+      sei();
+    }
+    else{
+      if (countertrig > 0){
+      countertrig --;
+      encA2LastState = encA2State;
       sei();
       }
     }    
